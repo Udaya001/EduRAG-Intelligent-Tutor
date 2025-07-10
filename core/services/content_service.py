@@ -16,10 +16,13 @@ def add_to_vectorstore(texts):
 
     logger.info("Adding texts to vector store")
     vectorstore = get_vectorstore()
-    vectorstore.add_texts(texts=texts)
+
+    for text in texts:
+        vectorstore.add_texts(texts=[text])  # Send one text at a time
 
     save_vectorstore(vectorstore)
     logger.debug("Vector store updated")
+
 
 
 
