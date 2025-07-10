@@ -2,12 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from utils.logger import logger
 from core.config import settings
-from api.v1 import router
+from db.models import ContentModel
+from db.database import engine
+
+from api.v1.router import router
 import uvicorn
 
 app = FastAPI(
     title="EduRAG Backend",
-    description="DocBot – Intelligent Tutor Using RAG and LangChain",
+    description="EduRAG – Intelligent Tutor Using RAG and LangChain",
 )
 
 app.add_middleware(
@@ -17,6 +20,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Ensure tables exist
+ContentModel.metadata.create_all(bind=engine)
+
 
 @app.get("/")
 def get_homepage():
