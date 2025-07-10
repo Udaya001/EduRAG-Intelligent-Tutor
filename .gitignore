@@ -1,2 +1,4 @@
 *.pyc
 .env
+chroma_db
+logs
