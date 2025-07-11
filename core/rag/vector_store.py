@@ -1,5 +1,5 @@
 import os
-from langchain.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_google_vertexai import VertexAIEmbeddings
 
 CHROMA_PERSIST_DIRECTORY = "chroma_db"
@@ -14,4 +14,4 @@ def get_vectorstore():
     return Chroma(persist_directory=CHROMA_PERSIST_DIRECTORY, embedding_function=embeddings)
 
 def save_vectorstore(vectorstore):
-    vectorstore.persist()
+    pass

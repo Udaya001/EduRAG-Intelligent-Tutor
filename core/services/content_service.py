@@ -16,10 +16,13 @@ def add_to_vectorstore(texts):
 
     logger.info("Adding texts to vector store")
     vectorstore = get_vectorstore()
-    vectorstore.add_texts(texts=texts)
+
+    for text in texts:
+        vectorstore.add_texts(texts=[text])  # Send one text at a time
 
     save_vectorstore(vectorstore)
     logger.debug("Vector store updated")
+
 
 
 
@@ -88,7 +91,11 @@ class ContentService:
             total_topics = self.db.query(ContentModel.topic).distinct().count()
             total_files = self.db.query(ContentModel).count()
             vectorstore = get_vectorstore()
-            vector_store_size = len(vectorstore.index_to_docstore_id) if vectorstore else 0
+            
+            if vectorstore:
+                vector_store_size = vectorstore._collection.count()
+            else:
+                vector_store_size = 0
 
             metrics = {
                 "total_topics": total_topics,

@@ -1,6 +1,12 @@
-from sqlalchemy import Column, Integer, String, Text, JSON, DateTime
+from sqlalchemy import Column, Integer, String, Text, JSON, DateTime, Boolean
 from db.database import Base
 from datetime import datetime
+
+class SessionModel(Base):
+    __tablename__ = "sessions"
+    id = Column(String, primary_key=True)  
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
 
 class ContentModel(Base):
     __tablename__ = "contents"
@@ -12,6 +18,14 @@ class ContentModel(Base):
     content = Column(Text)
     metadata_ = Column("metadata", JSON)  
 
+class ChatMemoryModel(Base):
+    __tablename__ = "chat_memory"
+
+    id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(String, index=True, nullable=False)
+    role = Column(String, nullable=False)  # 'human' or 'ai'
+    content = Column(Text, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
 
 class FeedbackModel(Base):
     __tablename__ = "feedback"
