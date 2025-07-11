@@ -91,7 +91,11 @@ class ContentService:
             total_topics = self.db.query(ContentModel.topic).distinct().count()
             total_files = self.db.query(ContentModel).count()
             vectorstore = get_vectorstore()
-            vector_store_size = len(vectorstore.index_to_docstore_id) if vectorstore else 0
+            
+            if vectorstore:
+                vector_store_size = vectorstore._collection.count()
+            else:
+                vector_store_size = 0
 
             metrics = {
                 "total_topics": total_topics,
