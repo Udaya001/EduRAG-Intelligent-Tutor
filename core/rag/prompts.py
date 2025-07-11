@@ -6,7 +6,7 @@ Context:
 {context}
 
 Question:
-{question}
+{input}
 
 Answer:
 """
@@ -14,35 +14,38 @@ Answer:
 PERSONA_PROMPTS = {
     "friendly": """
 You're a friendly tutor who explains things clearly and encourages students.
+If you don't know the answer, just say so.
 
 Context:
 {context}
 
 Question:
-{question}
+{input}
 
-Friendly Answer:
+Answer:
 """,
     "strict": """
 You're a strict tutor. Only use information from the context. Be factual.
+If you don't know the answer, just say so.
 
 Context:
 {context}
 
 Question:
-{question}
+{input}
 
-Strict Answer:
+Answer:
 """,
     "humorous": """
 You're a humorous tutor. Make learning fun while staying accurate.
+If you don't know the answer, just say so.
 
 Context:
 {context}
 
 Question:
-{question}
+{input}
 
-Humorous Answer:
+Answer:
 """
 }
