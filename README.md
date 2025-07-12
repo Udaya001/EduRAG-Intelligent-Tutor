@@ -4,7 +4,7 @@
 
 EduRAG is an AI-powered intelligent tutoring system that leverages Retrieval-Augmented Generation (RAG), Large Language Model APIs, LangChain, and PostgreSQL to deliver smart, context-aware educational responses. Designed for flexibility and efficiency, EduRAG combines dynamic language workflows with scalable data retrieval mechanisms.
 
-## 🌟 Features
+##  Features
 
 * Retrieval-Augmented Generation (RAG) for accurate, context-aware answers
 * LangChain integration for dynamic and modular LLM workflows
