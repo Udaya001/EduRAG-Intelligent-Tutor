@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduRAG Playground</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
+            min-height: 100vh;
+            color: #1f2937;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .header p {
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .session-status {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-dot.active {
+            background-color: #10b981;
+        }
+        .status-dot.inactive {
+            background-color: #ef4444;
+        }
+        .session-text {
+            font-weight: 500;
+        }
+        .session-id {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            color: #6b7280;
+            font-size: 0.8rem;
+        }
+        .new-session-btn {
+            background: #ffffff;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .new-session-btn:hover:not(:disabled) {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        .new-session-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .tabs {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        .tab-list {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .tab-button:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .tab-button.active {
+            background: white;
+            color: #2563eb;
+            border-bottom: 2px solid #2563eb;
+        }
+        .tab-content {
+            display: none;
+            padding: 2rem;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-description {
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        .card-content {
+            padding: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        .button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .button:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+        .button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .button-outline {
+            background: white;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+        .button-outline:hover:not(:disabled) {
+            background: #f9fafb;
+        }
+        .result-display {
+            margin-top: 1rem;
+        }
+        .result-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .result-content {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #6b7280;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        /* New styles for readable responses */
+        .response-display {
+            margin-top: 1rem;
+        }
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .response-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .response-timestamp {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        .response-content {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.25rem;
+            line-height: 1.6;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        .response-content p {
+            margin-bottom: 1rem;
+        }
+        .response-content p:last-child {
+            margin-bottom: 0;
+        }
+        .response-actions {
+            margin-top: 0.75rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .copy-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #e5e7eb;
+        }
+        .error-display {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+        .success-display {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #166534;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.error {
+            background: #ef4444;
+        }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        @media (max-width: 768px) {
+            .tab-list {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .tab-button {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .session-status {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .session-info {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                EduRAG Playground
+            </h1>
+            <p>An intelligent tutoring system that helps students learn through interactive Q&A and personalized content delivery.</p>
+        </div>
+        <!-- Session Status -->
+        <div class="session-status">
+            <div class="session-info">
+                <div class="status-dot inactive" id="statusDot"></div>
+                <span class="session-text" id="sessionStatus">Session Status: Disconnected</span>
+                <span class="session-id" id="sessionId"></span>
+            </div>
+            <button class="new-session-btn" onclick="initializeSession()" id="newSessionBtn">
+                New Session
+            </button>
+        </div>
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab-list">
+                <button class="tab-button active" onclick="switchTab('upload')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                    </svg>
+                    Upload
+                </button>
+                <button class="tab-button" onclick="switchTab('ask')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Ask
+                </button>
+                <button class="tab-button" onclick="switchTab('topics')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+                    </svg>
+                    Topics
+                </button>
+                <button class="tab-button" onclick="switchTab('metrics')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Metrics
+                </button>
+                <button class="tab-button" onclick="switchTab('feedback')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        <path d="M13 8H7"/>
+                        <path d="M17 12H7"/>
+                    </svg>
+                    Feedback
+                </button>
+                <button class="tab-button" onclick="switchTab('logs')">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                    Logs
+                </button>
+            </div>
+            <!-- Upload Content Tab -->
+            <div class="tab-content active" id="upload">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                        </svg>
+                        Upload Textbook Content
+                    </div>
+                    <div class="card-description">
+                        Add educational content to the knowledge base for students to learn from.
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="topic">Topic</label>
+                            <input type="text" id="topic" placeholder="e.g., Science">
+                        </div>
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input type="text" id="title" placeholder="e.g., Photosynthesis Basics">
+                        </div>
+                        <div class="form-group">
+                            <label for="grade">Grade</label>
+                            <select id="grade">
+                                <option value="">Select Grade</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                                <option value="9">9</option>
+                                <option value="10">10</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea id="content" placeholder="Paste textbook content here..."></textarea>
+                    </div>
+                    <button class="button" onclick="uploadContent(event)" id="uploadBtn">
+                        Upload Content
+                    </button>
+                    <div id="uploadResult"></div>
+                </div>
+            </div>
+            <!-- Ask Question Tab -->
+            <div class="tab-content" id="ask">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        Ask the Tutor
+                    </div>
+                    <div class="card-description">
+                        Get personalized answers from the AI tutor based on uploaded content.
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="question">Question</label>
+                        <input type="text" id="question" placeholder="e.g., What is photosynthesis?">
+                    </div>
+                    <div class="form-group">
+                        <label for="persona">Tutor Persona</label>
+                        <select id="persona">
+                            <option value="default">Default</option>
+                            <option value="friendly">Friendly</option>
+                            <option value="strict">Strict</option>
+                            <option value="humorous">Humorous</option>
+                        </select>
+                    </div>
+                    <button class="button" onclick="askQuestion()" id="askBtn">
+                        Get Answer
+                    </button>
+                    <div id="answerResult"></div>
+                </div>
+            </div>
+            <!-- Topics Tab -->
+            <div class="tab-content" id="topics">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
+                        </svg>
+                        Filter Topics by Grade
+                    </div>
+                    <div class="card-description">
+                        Browse available topics filtered by grade level.
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="filterGrade">Select Grade</label>
+                        <select id="filterGrade">
+                            <option value="">All Grades</option>
+                            <option value="1">Grade 1</option>
+                            <option value="2">Grade 2</option>
+                            <option value="3">Grade 3</option>
+                            <option value="4">Grade 4</option>
+                            <option value="5">Grade 5</option>
+                            <option value="6">Grade 6</option>
+                            <option value="7">Grade 7</option>
+                            <option value="8">Grade 8</option>
+                            <option value="9">Grade 9</option>
+                            <option value="10">Grade 10</option>
+                        </select>
+                    </div>
+                    <button class="button" onclick="getTopics()" id="topicsBtn">
+                        Get Topics
+                    </button>
+                    <div id="topicsResult"></div>
+                </div>
+            </div>
+            <!-- Metrics Tab -->
+            <div class="tab-content" id="metrics">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                        System Metrics
+                    </div>
+                    <div class="card-description">
+                        View system performance and usage statistics.
+                    </div>
+                </div>
+                <div class="card-content">
+                    <button class="button" onclick="getMetrics()" id="metricsBtn">
+                        Load Metrics
+                    </button>
+                    <div id="metricsResult"></div>
+                </div>
+            </div>
+            <!-- Feedback Tab -->
+            <div class="tab-content" id="feedback">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                            <path d="M13 8H7"/>
+                            <path d="M17 12H7"/>
+                        </svg>
+                        Submit Feedback
+                    </div>
+                    <div class="card-description">
+                        Help improve the system by providing feedback on answers.
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="form-group">
+                        <label for="feedbackQuestion">Question</label>
+                        <input type="text" id="feedbackQuestion" placeholder="Enter question you asked">
+                    </div>
+                    <div class="form-group">
+                        <label for="feedbackAnswer">Answer</label>
+                        <input type="text" id="feedbackAnswer" placeholder="Copy/paste the answer you received">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="feedbackRating">Rating (1-5)</label>
+                            <input type="number" id="feedbackRating" min="1" max="5" placeholder="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="feedbackComment">Comment (optional)</label>
+                            <input type="text" id="feedbackComment" placeholder="Additional feedback">
+                        </div>
+                    </div>
+                    <button class="button" onclick="submitFeedback()" id="feedbackBtn">
+                        Submit Feedback
+                    </button>
+                    <div id="feedbackResult"></div>
+                </div>
+            </div>
+            <!-- Logs Tab -->
+            <div class="tab-content" id="logs">
+                <div class="card-header">
+                    <div class="card-title">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        Question & Answer Logs
+                    </div>
+                    <div class="card-description">
+                        View all logged questions and answers from the system.
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="flex gap-2">
+                        <button class="button" onclick="viewLogs()" id="logsAllBtn">
+                            View All Logs
+                        </button>
+                        <button class="button button-outline" onclick="viewLogs(sessionId)" id="logsCurrentSessionBtn">
+                            View Current Session Logs
+                        </button>
+                    </div>
+                    <div id="logsResult"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+    <script>
+        const API_BASE = "http://127.0.0.1:8000/api/v1/router";
+        let sessionId = null;
+
+        // Utility Functions
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${isError ? 'error' : ''} show`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function setButtonLoading(buttonId, isLoading, loadingText = 'Loading...') {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+            if (isLoading) {
+                button.disabled = true;
+                button.setAttribute('data-original-text', button.textContent);
+                button.textContent = loadingText;
+            } else {
+                button.disabled = false;
+                const originalText = button.getAttribute('data-original-text');
+                if (originalText) {
+                    button.textContent = originalText;
+                    button.removeAttribute('data-original-text');
+                }
+            }
+        }
+
+        function displayReadableResponse(containerId, data, title, isError = false) {
+            const container = document.getElementById(containerId);
+            if (!data) {
+                container.innerHTML = '';
+                return;
+            }
+            let content = '';
+
+            if (isError) {
+                content = `
+                    <div class="error-display">
+                        <strong>Error:</strong> ${data.error || data.detail || 'An error occurred'}
+                    </div>
+                `;
+            } else {
+                // Handle different response types
+                if (data.answer) {
+                    // Answer response
+                    content = `
+                        <div class="response-display">
+                            <div class="response-header">
+                                <div class="response-title">
+                                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                    </svg>
+                                    Tutor Response
+                                </div>
+                                <div class="response-timestamp">${new Date().toLocaleTimeString()}</div>
+                            </div>
+                            <div class="response-content">
+                                <p>${data.answer}</p>
+                            </div>
+                            <div class="response-actions">
+                                <button class="copy-btn" onclick="copyToClipboard('${data.answer.replace(/'/g, "\\'")}')">
+                                    Copy Answer
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (data.message) {
+                    // Success message (used for upload confirmation)
+                    content = `
+                        <div class="success-display">
+                            <strong>Success:</strong> ${data.message}
+                            ${data.content_id ? `<br><small>Content ID: ${data.content_id}</small>` : ''}
+                        </div>
+                    `;
+                } else if (data.topics) {
+                    // Topics response
+                    const topicsList = data.topics.map(topic =>
+                        `<li><strong>${topic.title || topic.topic}</strong> (Grade ${topic.grade})</li>`
+                    ).join('');
+                    content = `
+                        <div class="response-display">
+                            <div class="response-header">
+                                <div class="response-title">Available Topics</div>
+                                <div class="response-timestamp">${data.topics.length} topics found</div>
+                            </div>
+                            <div class="response-content">
+                                <ul style="margin-left: 1.5rem;">${topicsList}</ul>
+                            </div>
+                        </div>
+                    `;
+                } else if (data.logs) {
+                    // Logs response
+                    const logsList = data.logs.map(log =>
+                        `<div style="margin-bottom: 1rem; padding: 0.75rem; background: #f9fafb; border-radius: 6px;">
+                            <strong>Session:</strong> ${log.session_id || 'N/A'}<br>
+                            <strong>Q:</strong> ${log.question}<br>
+                            <strong>A:</strong> ${log.answer}<br>
+                            <small style="color: #6b7280;">${new Date(log.timestamp).toLocaleString()}</small>
+                        </div>`
+                    ).join('');
+                    content = `
+                        <div class="response-display">
+                            <div class="response-header">
+                                <div class="response-title">Question & Answer Logs</div>
+                                <div class="response-timestamp">${data.logs.length} entries</div>
+                            </div>
+                            <div class="response-content" style="max-height: 300px; overflow-y: auto;">
+                                ${logsList || '<p>No logs available</p>'}
+                            </div>
+                        </div>
+                    `;
+                } else if (data.total_topics !== undefined && data.total_files_uploaded !== undefined && data.vector_store_size !== undefined) {
+                    // Metrics response - specific check for metrics structure
+                    content = `
+                        <div class="response-display">
+                            <div class="response-header">
+                                <div class="response-title">System Metrics</div>
+                                <div class="response-timestamp">${new Date().toLocaleTimeString()}</div>
+                            </div>
+                            <div class="response-content">
+                                <p><strong>Total Topics:</strong> ${data.total_topics}</p>
+                                <p><strong>Total Files Uploaded:</strong> ${data.total_files_uploaded}</p>
+                                <p><strong>Vector Store Size:</strong> ${data.vector_store_size}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                else {
+                    // Generic response - show formatted JSON as fallback
+                    content = `
+                        <div class="response-display">
+                            <div class="response-header">
+                                <div class="response-title">${title}</div>
+                                <div class="response-timestamp">${new Date().toLocaleTimeString()}</div>
+                            </div>
+                            <div class="response-content">
+                                <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.8rem;">${JSON.stringify(data, null, 2)}</pre>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = content;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard!');
+            }).catch(() => {
+                showToast('Failed to copy to clipboard', true);
+            });
+        }
+
+        function updateSessionStatus() {
+            const statusDot = document.getElementById('statusDot');
+            const sessionStatus = document.getElementById('sessionStatus');
+            const sessionIdSpan = document.getElementById('sessionId');
+            const logsCurrentSessionBtn = document.getElementById('logsCurrentSessionBtn');
+
+            if (sessionId) {
+                statusDot.className = 'status-dot active';
+                sessionStatus.textContent = 'Session Status: Active';
+                sessionIdSpan.textContent = `ID: ${sessionId.slice(0, 8)}...`;
+                if (logsCurrentSessionBtn) {
+                    logsCurrentSessionBtn.disabled = false;
+                }
+            } else {
+                statusDot.className = 'status-dot inactive';
+                sessionStatus.textContent = 'Session Status: Disconnected';
+                sessionIdSpan.textContent = '';
+                if (logsCurrentSessionBtn) {
+                    logsCurrentSessionBtn.disabled = true;
+                }
+            }
+        }
+
+        // Tab Management
+        function switchTab(tabName) {
+            // Remove active class from all tabs and buttons
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            // Add active class to selected tab and button
+            document.getElementById(tabName).classList.add('active');
+            // Find the button that triggered the event and add 'active' class
+            // Note: event.currentTarget is implicitly available in inline onclick handlers
+            const clickedButton = event.currentTarget;
+            clickedButton.classList.add('active');
+        }
+
+        // API Functions
+        async function makeApiCall(endpoint, method = 'GET', body = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                console.log('Making API call to:', `${API_BASE}${endpoint}`);
+                const response = await fetch(`${API_BASE}${endpoint}`, options);
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: 'Network error or non-JSON error response' }));
+                    throw new Error(errorData.detail || errorData.error || `HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('API response:', data); // Log the raw data received
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        async function initializeSession() {
+            setButtonLoading('newSessionBtn', true, 'Starting...');
+            try {
+                const data = await makeApiCall('/start-session', 'POST');
+                sessionId = data.session_id;
+                updateSessionStatus();
+                showToast('Session started successfully!');
+            } catch (error) {
+                console.error('Session initialization failed:', error);
+                showToast('Failed to start session: ' + error.message, true);
+                sessionId = null;
+                updateSessionStatus();
+            } finally {
+                setButtonLoading('newSessionBtn', false);
+            }
+        }
+
+        async function uploadContent(event) { // Added 'event' parameter
+            event.preventDefault(); // Prevent default form submission (page refresh)
+            setButtonLoading('uploadBtn', true, 'Uploading...');
+            console.log('Current sessionId before upload:', sessionId); // Log session ID
+            try {
+                const payload = {
+                    content: document.getElementById('content').value,
+                    metadata: {
+                        topic: document.getElementById('topic').value,
+                        title: document.getElementById('title').value,
+                        grade: document.getElementById('grade').value
+                    }
+                };
+                // Validate payload
+                if (!payload.content || !payload.metadata.topic || !payload.metadata.title || !payload.metadata.grade) {
+                    showToast('Please fill out all fields', true);
+                    setButtonLoading('uploadBtn', false); // Ensure button state is reset
+                    return;
+                }
+                console.log('Uploading content with payload:', payload);
+                const data = await makeApiCall('/upload-content', 'POST', payload);
+                console.log('API Response:', data);
+
+                displayReadableResponse('uploadResult', data, 'Upload Result');
+                if (data.message) {
+                    showToast('Content uploaded successfully!');
+                } else {
+                    // If backend didn't send a 'message' field but it was a success, still show a generic toast
+                    showToast('Content upload completed (no specific message from server).');
+                }
+            } catch (error) {
+                displayReadableResponse('uploadResult', { error: error.message }, 'Upload Result', true);
+                showToast('Upload failed: ' + error.message, true);
+            } finally {
+                setButtonLoading('uploadBtn', false);
+            }
+        }
+
+        async function askQuestion() {
+            if (!sessionId) {
+                showToast('No active session. Please start a new session.', true);
+                return;
+            }
+            const question = document.getElementById('question').value;
+            if (!question.trim()) {
+                showToast('Please enter a question', true);
+                return;
+            }
+            setButtonLoading('askBtn', true, 'Getting Answer...');
+            try {
+                const persona = document.getElementById('persona').value;
+
+                const endpoint = `/ask?session_id=${encodeURIComponent(sessionId)}&persona=${encodeURIComponent(persona)}`;
+                const data = await makeApiCall(endpoint, 'POST', { question: question.trim() });
+
+                displayReadableResponse('answerResult', data, 'Answer');
+            } catch (error) {
+                displayReadableResponse('answerResult', { error: error.message }, 'Answer', true);
+                showToast('Failed to get answer: ' + error.message, true);
+            } finally {
+                setButtonLoading('askBtn', false);
+            }
+        }
+
+        async function getTopics() {
+            setButtonLoading('topicsBtn', true, 'Loading...');
+            try {
+                const grade = document.getElementById('filterGrade').value;
+                const endpoint = grade ? `/topics?grade=${encodeURIComponent(grade)}` : '/topics';
+
+                const data = await makeApiCall(endpoint);
+                displayReadableResponse('topicsResult', data, 'Topics');
+            } catch (error) {
+                displayReadableResponse('topicsResult', { error: error.message }, 'Topics', true);
+                showToast('Failed to get topics: ' + error.message, true);
+            } finally {
+                setButtonLoading('topicsBtn', false);
+            }
+        }
+
+        async function getMetrics() {
+            setButtonLoading('metricsBtn', true, 'Loading...');
+            try {
+                const data = await makeApiCall('/metrics');
+                displayReadableResponse('metricsResult', data, 'Metrics');
+            } catch (error) {
+                displayReadableResponse('metricsResult', { error: error.message }, 'Metrics', true);
+                showToast('Failed to get metrics: ' + error.message, true);
+            } finally {
+                setButtonLoading('metricsBtn', false);
+            }
+        }
+
+        async function submitFeedback() {
+            setButtonLoading('feedbackBtn', true, 'Submitting...');
+            try {
+                const payload = {
+                    question: document.getElementById('feedbackQuestion').value,
+                    answer: document.getElementById('feedbackAnswer').value,
+                    rating: parseInt(document.getElementById('feedbackRating').value),
+                    comment: document.getElementById('feedbackComment').value
+                };
+                const data = await makeApiCall('/feedback', 'POST', payload);
+                displayReadableResponse('feedbackResult', data, 'Feedback Result');
+                showToast('Feedback submitted successfully!');
+            } catch (error) {
+                displayReadableResponse('feedbackResult', { error: error.message }, 'Feedback Result', true);
+                showToast('Failed to submit feedback: ' + error.message, true);
+            } finally {
+                setButtonLoading('feedbackBtn', false);
+            }
+        }
+
+        async function viewLogs(specificSessionId = '') {
+            setButtonLoading('logsAllBtn', true, 'Loading...');
+            const logsCurrentSessionBtn = document.getElementById('logsCurrentSessionBtn');
+            if (logsCurrentSessionBtn) {
+                setButtonLoading('logsCurrentSessionBtn', true, 'Loading...'); // Disable current session button too
+            }
+
+            try {
+                let url = '/logs';
+                if(specificSessionId) {
+                    url += `?session_id=${encodeURIComponent(specificSessionId)}`;
+                }
+                const data = await makeApiCall(url);
+                displayReadableResponse('logsResult', data, 'Logs');
+            } catch (error) {
+                displayReadableResponse('logsResult', { error: error.message }, 'Logs', true);
+                showToast('Failed to get logs: ' + error.message, true);
+            } finally {
+                setButtonLoading('logsAllBtn', false);
+                if (logsCurrentSessionBtn) {
+                    setButtonLoading('logsCurrentSessionBtn', false);
+                }
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSessionStatus();
+            // Automatically initialize session on page load
+            initializeSession();
+        });
+    </script>
+</body>
+</html>

@@ -30,6 +30,8 @@ class QALogItem(BaseModel):
     question: str
     answer: str
     timestamp: datetime
+    session_id: str
+
 
 class QALogListResponse(BaseModel):
     logs: List[QALogItem]
