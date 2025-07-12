@@ -40,7 +40,7 @@ cp .env.example .env
 uvicorn main:app --reload
 ```
 
-## 🔧 Deployment with Nginx (Local)
+##  Deployment with Nginx (Local)
 
 ### 1. Install Nginx
 
