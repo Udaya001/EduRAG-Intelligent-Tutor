@@ -47,7 +47,7 @@ class ContentService:
             self.db.commit()
             self.db.refresh(content)
 
-            # Split content and add to FAISS
+            # Split content and add to Chroma
             splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
             texts = splitter.split_text(request.content)
             add_to_vectorstore(texts)
